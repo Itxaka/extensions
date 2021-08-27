@@ -1,4 +1,4 @@
-BUNDLED_EXTENSIONS ?= k8s-build-scheduler migrate-emerge remote-exec geninitramfs kernel-switcher autobump-github geniso genimage qa-artefacts migrate-entropy package-browser parallel-tools portage apkbuildconverter repo-devkit
+BUNDLED_EXTENSIONS ?= k8s-build-scheduler migrate-emerge remote-exec geninitramfs kernel-switcher autobump-github autobump-github-ng geniso genimage qa-artefacts migrate-entropy package-browser parallel-tools portage apkbuildconverter repo-devkit
 BUNDLED_EXTENSIONS_TEST ?= autobump-github
 UBINDIR ?= /usr/bin
 DESTDIR ?=

@@ -12,4 +12,8 @@ replace github.com/jaguilar/vt100 => github.com/tonistiigi/vt100 v0.0.0-20190402
 
 replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc9.0.20200221051241-688cf6d43cc4
 
-require github.com/mudler/luet v0.0.0-20210811123330-3402641241fd // indirect
+require (
+	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/mudler/luet v0.0.0-20210811123330-3402641241fd // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
+)

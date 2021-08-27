@@ -58,27 +58,62 @@ func main() {
 			continue
 		} else {
 			fmt.Println("⏫ Remote version is higher, lets bump it!")
-			fmt.Printf(p.DefinitionFile)
-			file, err := os.Open(p.DefinitionFile)
-			if err != nil {
-				Error("Error opening def file %s: %s", p.DefinitionFile, err)
-			}
-			definition, err := ioutil.ReadAll(file)
-			if err != nil {
-				Error("Error reading def file %s: %s", p.DefinitionFile, err)
-			}
-			m := make(map[interface{}]interface{})
-			err = yaml.Unmarshal(definition, &m)
-			if err != nil {
-				Error("Error unmarshalling def file %s: %s", p.DefinitionFile, err)
-			}
-			fmt.Printf("%v\n", m["version"])
-			m["version"] = remoteVersion
-			fmt.Printf("%v\n", m["version"])
+			_ = bumpVersion(remoteVersion, p)
 		}
 	}
 }
 
+func bumpVersion(version *semver.Version, p *CustomPackage) error {
+	fmt.Printf(p.DefinitionFile)
+	file, err := os.Open(p.DefinitionFile)
+	if err != nil {
+		Error("Error opening def file %s: %s", p.DefinitionFile, err)
+	}
+	definition, err := ioutil.ReadAll(file)
+	if err != nil {
+		Error("Error reading def file %s: %s", p.DefinitionFile, err)
+	}
+
+
+	if p.Collection {
+		var packages map[string][]pkg.DefaultPackage
+		err = yaml.Unmarshal(definition, &packages)
+		for index, pack := range packages["packages"] {
+			if arePackagesTheSame(pack, p.Package) {
+				// set package version
+				packages["packages"][index].SetVersion(version.Original())
+				// get all lables
+				labels := packages["packages"][index].GetLabels()
+				// set package version for autobump
+				labels["autobump.version"] = version.Original()
+				// save back the labels
+				packages["packages"][index].Labels = labels
+				fmt.Printf("MAP: %v\n", packages)
+			}
+		}
+		//fmt.Printf("collection: %v\n", packages)
+	} else {
+		var packages pkg.DefaultPackage
+		err = yaml.Unmarshal(definition, &packages)
+		//fmt.Printf("definition: %v\n", packages)
+	}
+
+	//err = yaml.Unmarshal(definition, &packages)
+	//if err != nil {
+	//	Error("Error unmarshalling def file %s: %s", p.DefinitionFile, err)
+	//}
+	//fmt.Printf("%v\n", m["version"])
+	//m["version"] = version
+	//fmt.Printf("%v\n", m["labels"])
+	//_, err = yaml.Marshal(m)
+	//if err != nil {
+	//	Error("Error marshalling data: %s", err)
+	//}
+
+	//_, _ = file.Write(toSave)
+	//_ = file.Close()
+	return nil
+}
 
 
 type arrayFlags []string
@@ -110,6 +145,18 @@ func (c CustomPackage) printLabels()  {
 		v = regex.ReplaceAllString(strings.TrimSpace(v), "")
 		fmt.Printf("📝 %s ➡ %s\n", l, v)
 	}
+}
+
+
+func arePackagesTheSame(p1 pkg.DefaultPackage, p2 pkg.Package) bool {
+	// TODO: check also labels???
+	if p1.GetPackageName() == p2.GetPackageName() &&
+		p1.GetName() == p2.GetName() &&
+		p1.GetCategory() == p2.GetCategory() &&
+		p1.GetVersion() == p2.GetVersion() {
+		return true
+	}
+	return false
 }
 
 // newCustomPackage creates a new custom Package and fills the collection and definition file
